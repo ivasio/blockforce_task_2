@@ -1,6 +1,7 @@
 import json
 import requests
 import configparser
+from datetime import datetime
 
 
 CONFIG = configparser.ConfigParser()
@@ -13,29 +14,34 @@ def checkInternetConnection() :
 		return True
 	except :
 		return False
-
-
-def checkProvider(currency) :
-
-	url = CONFIG[currency]["Test_Provider"].format(key = CONFIG[currency]["API_Key"])
-	response = requests.get(url).json()
-
-	return bool(int(response["status"]))
 	
 
 def checkWallet(walletAddress) :
 
-	url = CONFIG["Ethereum"]["Provider"].format(key = CONFIG["Ethereum"]["API_Key"], 
+	url = CONFIG["Ethereum"]["Test_Provider"].format(key = CONFIG["Ethereum"]["API_Key"], 
 		address = walletAddress)
 	
 	response = requests.get(url).json()
 	return response
 
 
-def getWalletBalance(walletAddress) :
+def getWalletInfo(walletAddress) :
 
 	url = CONFIG["Ethereum"]["Provider"].format(key = CONFIG["Ethereum"]["API_Key"], 
 		address = walletAddress)
 	
 	response = requests.get(url).json()
-	return response.json()
+
+	sum = 0
+	dates = []
+	if len(response["result"]) != 0 :
+		for transaction in response["result"] :
+			if transaction["to"] == walletAddress :
+				sum += int(transaction["value"])
+			dates.append (datetime.fromtimestamp(int(transaction["timeStamp"])).strftime("%d.%m.%Y"))
+
+	return {
+		"number" : len(response["result"]),
+		"sum" : sum,
+		"dates" : dates
+	}

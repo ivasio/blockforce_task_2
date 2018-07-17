@@ -18,15 +18,24 @@ def displayInfo():
 	walletAddress = dialog.lineEdit.text()
 	check = eth.checkWallet(walletAddress)
 	
-	if check.status == "0" :
-		if check.result == "Error! Invalid address format" :
-			showErrorWindow ("Неверно введен адрес кошелька!")
+	if check["status"] == "0" :
+		if check["result"] == "Error! Invalid address format" :
+			showErrorWindow("Неверно введен адрес кошелька!")
 		else :
-			showErrorWindow ("Ошибка!")
+			print (check.__str__())
+			showErrorWindow("Ошибка!")
 		return False
 	
-	info = eth.getWalletBalance(walletAddress)
-	dialog.textBrowser.setText(info["result"])
+	info = eth.getWalletInfo(walletAddress)
+
+	output = "Совершено {} транзакций\n".format(info["number"])
+	if info["sum"] != 0 :
+		output += "Сумма входящих транзакций - {}\n".format(str(info["sum"]))
+		output += "Даты транзакций : \n"
+		for date in info["dates"] :
+			output += "{}\n".format(date)
+
+	dialog.textBrowser.setText(output)
 
 
 
@@ -39,6 +48,5 @@ dialog.pushButton.clicked.connect(displayInfo)
 
 
 dialog.show()
-print ("shit")
 app.exec()
 
